@@ -4,17 +4,27 @@ import { Routes, RouterModule } from '@angular/router';
 // project import
 import { AdminComponent } from './theme/layout/admin/admin.component';
 import { GuestComponent } from './theme/layout/guest/guest.component';
+import { AuthSigninComponent } from './demo/pages/authentication/auth-signin/auth-signin.component';
+
+
 
 const routes: Routes = [
   {
     path: '',
-    component: AdminComponent,
+    component: AuthSigninComponent,
     children: [
       {
         path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      },
+        // redirectTo: 'auth',
+        pathMatch: 'full',
+        loadComponent: () => import('./demo/pages/authentication/auth-signin/auth-signin.component').then((c) => c.AuthSigninComponent)
+      }
+    ]
+  },
+  {
+    path: '',
+    component: AdminComponent,
+    children: [
       {
         path: 'dashboard',
         loadComponent: () => import('./demo/dashboard/dashboard.component').then((c) => c.DashboardComponent)

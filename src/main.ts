@@ -6,11 +6,11 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app/app-routing.module';
 import { AppComponent } from './app/app.component';
-
+import { HttpClientModule } from '@angular/common/http';
 if (environment.production) {
   enableProdMode();
 }
 
 bootstrapApplication(AppComponent, {
-  providers: [importProvidersFrom(BrowserModule, AppRoutingModule), provideAnimations()]
+  providers: [importProvidersFrom(BrowserModule, AppRoutingModule,HttpClientModule), provideAnimations()]
 }).catch((err) => console.error(err));
