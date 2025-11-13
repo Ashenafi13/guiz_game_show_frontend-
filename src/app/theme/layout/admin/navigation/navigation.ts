@@ -32,6 +32,62 @@ export const NavigationItems: NavigationItem[] = [
     ]
   },
   {
+    id: 'quiz-management',
+    title: 'Quiz Management',
+    type: 'group',
+    icon: 'icon-group',
+    children: [
+      {
+        id: 'seasons',
+        title: 'Seasons',
+        type: 'item',
+        url: '/seasons',
+        classes: 'nav-item',
+        icon: 'feather icon-calendar'
+      },
+      {
+        id: 'episodes',
+        title: 'Episodes',
+        type: 'item',
+        url: '/episodes',
+        classes: 'nav-item',
+        icon: 'feather icon-film'
+      },
+      {
+        id: 'questions',
+        title: 'Questions',
+        type: 'item',
+        url: '/questions',
+        classes: 'nav-item',
+        icon: 'feather icon-help-circle'
+      },
+      {
+        id: 'categories',
+        title: 'Categories',
+        type: 'item',
+        url: '/categories',
+        classes: 'nav-item',
+        icon: 'feather icon-tag'
+      },
+      {
+        id: 'contestants',
+        title: 'Contestants',
+        type: 'item',
+        url: '/contestants',
+        classes: 'nav-item',
+        icon: 'feather icon-users'
+      },
+      {
+        id: 'teams',
+        title: 'Teams',
+        type: 'item',
+        url: '/teams',
+        classes: 'nav-item',
+        icon: 'feather icon-shield'
+      }
+    ]
+  },
+  {
     id: 'ui-element',
     title: 'UI ELEMENT',
     type: 'group',

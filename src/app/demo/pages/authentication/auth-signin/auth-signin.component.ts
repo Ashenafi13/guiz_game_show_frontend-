@@ -28,20 +28,22 @@ export class AuthSigninComponent {
 
     async signIn(){
       this.loading = true;
-      let data = {
+      let datauser = {
         username:this.username,
         password:this.password
       }
-      this.authservice.SignIn(data).subscribe({
-        next:(data)=> {
+      this.authservice.SignIn(datauser).subscribe({
+        next:(response)=> {
           this.loading = false;
-          this.storage.setToken(data.token);
-          this.storage.setUserId(data.user);
-          this.router.navigate(['/dashboard']);
+
+          this.storage.setToken(response.data.token);
+          this.storage.setUserId(response.data.userid);
+           this.router.navigate(['/dashboard']);
         },
         error:(err)=>{
           this.loading = false;
           this.error = err.error.message;
+          console.error('❌ Login error:', err);
         }
       })
     }

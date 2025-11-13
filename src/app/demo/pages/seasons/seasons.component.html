@@ -1,0 +1,167 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="feather icon-calendar me-2"></i>Seasons Management
+        </h5>
+        <button class="btn btn-primary" (click)="openAddModal()">
+          <i class="feather icon-plus me-1"></i>Add Season
+        </button>
+      </div>
+      <div class="card-body">
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="feather icon-alert-circle me-2"></i>{{ error }}
+          <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Seasons Table -->
+        <div *ngIf="!loading" class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let season of seasons">
+                <td><strong>{{ season.name }}</strong></td>
+
+                             <td>
+                  <span class="badge" [ngClass]="season.isActive ? 'bg-success' : 'bg-secondary'">
+                    {{ season.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-info me-1" (click)="viewEpisodes(season._id!)" title="View Episodes">
+                    <i class="feather icon-list"></i>
+                  </button>
+                  <button class="btn btn-sm btn-warning me-1" (click)="openEditModal(season)" title="Edit">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="openDeleteModal(season)" title="Delete">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="seasons.length === 0">
+                <td colspan="6" class="text-center py-4">
+                  <i class="feather icon-inbox" style="font-size: 48px; color: #ccc;"></i>
+                  <p class="mt-2 text-muted">No seasons found. Click "Add Season" to create one.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Season Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Season</h5>
+        <button type="button" class="btn-close" (click)="closeAddModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="newSeason.name" name="name" required>
+          </div>
+
+
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="newSeason.isActive" name="isActive" id="isActive">
+              <label class="form-check-label" for="isActive">Active</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="addSeason()" [disabled]="!newSeason.name || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Add Season
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showAddModal" *ngIf="showAddModal"></div>
+
+<!-- Edit Season Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Season</h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedSeason">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="selectedSeason.name" name="name" required>
+          </div>
+
+         
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="selectedSeason.isActive" name="isActive" id="editIsActive">
+              <label class="form-check-label" for="editIsActive">Active</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateSeason()" [disabled]="!selectedSeason?.name || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Update Season
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showEditModal" *ngIf="showEditModal"></div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedSeason">
+        <p>Are you sure you want to delete the season <strong>{{ selectedSeason.name }}</strong>?</p>
+        <p class="text-muted mb-0">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteSeason()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showDeleteModal" *ngIf="showDeleteModal"></div>
+

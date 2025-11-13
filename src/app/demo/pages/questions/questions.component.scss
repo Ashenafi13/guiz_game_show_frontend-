@@ -1,0 +1,45 @@
+.modal {
+  &.show {
+    opacity: 1;
+  }
+}
+
+.modal-backdrop {
+  &.show {
+    opacity: 0.5;
+  }
+}
+
+.table {
+  th {
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.875em;
+  text-transform: capitalize;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+

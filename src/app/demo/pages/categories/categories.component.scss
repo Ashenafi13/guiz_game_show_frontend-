@@ -1,0 +1,35 @@
+.modal {
+  &.show {
+    opacity: 1;
+  }
+}
+
+.modal-backdrop {
+  &.show {
+    opacity: 0.5;
+  }
+}
+
+.category-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.badge {
+  padding: 0.35em 0.65em;
+  font-size: 0.875em;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+

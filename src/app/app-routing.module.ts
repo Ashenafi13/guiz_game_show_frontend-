@@ -48,6 +48,30 @@ const routes: Routes = [
       {
         path: 'sample-page',
         loadComponent: () => import('./demo/extra/sample-page/sample-page.component').then((c) => c.SamplePageComponent)
+      },
+      {
+        path: 'seasons',
+        loadComponent: () => import('./demo/pages/seasons/seasons.component').then((c) => c.SeasonsComponent)
+      },
+      {
+        path: 'episodes',
+        loadComponent: () => import('./demo/pages/episodes/episodes.component').then((c) => c.EpisodesComponent)
+      },
+      {
+        path: 'questions',
+        loadComponent: () => import('./demo/pages/questions/questions.component').then((c) => c.QuestionsComponent)
+      },
+      {
+        path: 'contestants',
+        loadComponent: () => import('./demo/pages/contestants/contestants.component').then((c) => c.ContestantsComponent)
+      },
+      {
+        path: 'teams',
+        loadComponent: () => import('./demo/pages/teams/teams.component').then((c) => c.TeamsComponent)
+      },
+      {
+        path: 'categories',
+        loadComponent: () => import('./demo/pages/categories/categories.component').then((c) => c.CategoriesComponent)
       }
     ]
   },
