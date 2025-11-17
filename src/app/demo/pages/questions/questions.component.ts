@@ -5,6 +5,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { QuestionsService, Question, QuestionChoice, Pagination } from '../../services/questions.service';
 import { CategoriesService, Category } from '../../services/categories.service';
 import { RewardTypeService, RewardType } from '../../services/reawrd-type.service';
+import { EpisodesService, Episode } from '../../services/episodes.service';
+import { SeasonsService, Season } from '../../services/seasons.service';
+import { EpisodeQuestionsService } from '../../services/episode-questions.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -18,6 +21,8 @@ export class QuestionsComponent implements OnInit {
   questions: Question[] = [];
   categories: Category[] = [];
   rewardTypes: RewardType[] = [];
+  episodes: Episode[] = [];
+  seasons: Season[] = [];
   loading: boolean = false;
   error: string = '';
   environment = environment;
@@ -40,6 +45,14 @@ export class QuestionsComponent implements OnInit {
   showAddModal: boolean = false;
   showEditModal: boolean = false;
   showDeleteModal: boolean = false;
+  showBulkAssignModal: boolean = false;
+
+  // Bulk selection
+  selectedQuestions: Set<string> = new Set();
+  bulkAssignData = {
+    episodeId: '',
+    seasonId: ''
+  };
 
   // Form data
   newQuestion: any = this.getEmptyQuestion();
@@ -70,6 +83,9 @@ export class QuestionsComponent implements OnInit {
     private questionsService: QuestionsService,
     private categoriesService: CategoriesService,
     private rewardTypeService: RewardTypeService,
+    private episodesService: EpisodesService,
+    private seasonsService: SeasonsService,
+    private episodeQuestionsService: EpisodeQuestionsService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -77,6 +93,8 @@ export class QuestionsComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.loadRewardTypes();
+    this.loadSeasons();
+    this.loadEpisodes();
 
     // Check if there's a categoryId query parameter
     this.route.queryParams.subscribe(params => {
@@ -165,6 +183,43 @@ export class QuestionsComponent implements OnInit {
         console.error('Error loading reward types:', err);
       }
     });
+  }
+
+  loadSeasons(): void {
+    this.seasonsService.getAllSeasons().subscribe({
+      next: (response) => {
+        this.seasons = response.data || [];
+      },
+      error: (err) => {
+        console.error('Error loading seasons:', err);
+      }
+    });
+  }
+
+  loadEpisodes(): void {
+    this.episodesService.getAllEpisodes().subscribe({
+      next: (response) => {
+        this.episodes = response.data || [];
+      },
+      error: (err) => {
+        console.error('Error loading episodes:', err);
+      }
+    });
+  }
+
+  onSeasonChange(seasonId: string): void {
+    if (seasonId) {
+      this.episodesService.getEpisodesBySeason(seasonId).subscribe({
+        next: (response) => {
+          this.episodes = response.data || [];
+        },
+        error: (err) => {
+          console.error('Error loading episodes by season:', err);
+        }
+      });
+    } else {
+      this.loadEpisodes();
+    }
   }
 
   loadAllQuestions(): void {
@@ -555,5 +610,92 @@ export class QuestionsComponent implements OnInit {
     }
     const correctChoice = question.choices.find(c => c.isAnswer);
     return correctChoice ? correctChoice.choose : 'N/A';
+  }
+
+  // Bulk selection methods
+  toggleQuestionSelection(questionId: string): void {
+    if (this.selectedQuestions.has(questionId)) {
+      this.selectedQuestions.delete(questionId);
+    } else {
+      this.selectedQuestions.add(questionId);
+    }
+  }
+
+  isQuestionSelected(questionId: string): boolean {
+    return this.selectedQuestions.has(questionId);
+  }
+
+  selectAllQuestions(): void {
+    this.questions.forEach(q => {
+      if (q.id) this.selectedQuestions.add(q.id);
+    });
+  }
+
+  deselectAllQuestions(): void {
+    this.selectedQuestions.clear();
+  }
+
+  get hasSelectedQuestions(): boolean {
+    return this.selectedQuestions.size > 0;
+  }
+
+  // Bulk assign modal
+  openBulkAssignModal(): void {
+    if (this.selectedQuestions.size === 0) {
+      alert('Please select at least one question');
+      return;
+    }
+    this.bulkAssignData = {
+      episodeId: '',
+      seasonId: ''
+    };
+    this.showBulkAssignModal = true;
+  }
+
+  closeBulkAssignModal(): void {
+    this.showBulkAssignModal = false;
+  }
+
+  bulkAssignToEpisode(): void {
+    if (!this.bulkAssignData.episodeId || !this.bulkAssignData.seasonId) {
+      alert('Please select both season and episode');
+      return;
+    }
+
+    const questionIds = Array.from(this.selectedQuestions).map(id => parseInt(id));
+
+    this.loading = true;
+    this.episodeQuestionsService.bulkAssignQuestionsToEpisode(
+      this.bulkAssignData.episodeId,
+      {
+        seasonId: this.bulkAssignData.seasonId,
+        questionIds: questionIds
+      }
+    ).subscribe({
+      next: (response) => {
+        console.log('Bulk assign response:', response);
+        alert(`Successfully assigned ${questionIds.length} questions to episode`);
+        this.closeBulkAssignModal();
+        this.deselectAllQuestions();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error bulk assigning questions:', err);
+        this.error = err.error?.message || 'Failed to assign questions to episode';
+        this.loading = false;
+      }
+    });
+  }
+
+  // Get season name by ID
+  getSeasonName(seasonId: string): string {
+    const season = this.seasons.find(s => s.id === seasonId);
+    return season ? season.name : 'Unknown';
+  }
+
+  // Get episode name by ID
+  getEpisodeName(episodeId: string): string {
+    const episode = this.episodes.find(e => e.id === episodeId);
+    return episode ? episode.name : 'Unknown';
   }
 }

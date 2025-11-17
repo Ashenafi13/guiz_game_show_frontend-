@@ -20,7 +20,33 @@
           </div>
         </div>
         <div class="card-body">
-         
+          <!-- Bulk Actions Bar -->
+          <div *ngIf="hasSelectedQuestions" class="bulk-actions-bar mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <i class="feather icon-check-square me-2"></i>
+                <strong>{{ selectedQuestions.size }}</strong> question(s) selected
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-primary" (click)="openBulkAssignModal()">
+                  <i class="feather icon-link me-1"></i>Assign to Episode
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" (click)="deselectAllQuestions()">
+                  <i class="feather icon-x me-1"></i>Clear Selection
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selection Controls -->
+          <div class="selection-controls mb-3" *ngIf="questions.length > 0">
+            <button class="btn btn-sm btn-outline-primary" (click)="selectAllQuestions()">
+              <i class="feather icon-check-square me-1"></i>Select All
+            </button>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="deselectAllQuestions()">
+              <i class="feather icon-square me-1"></i>Deselect All
+            </button>
+          </div>
 
           <!-- Error Alert -->
           <div *ngIf="error" class="alert alert-danger alert-dismissible fade show modern-alert" role="alert">
@@ -37,7 +63,15 @@
 
           <!-- Questions Grid -->
           <div *ngIf="!loading" class="questions-grid">
-            <div class="question-card" *ngFor="let question of questions; let i = index">
+            <div class="question-card" *ngFor="let question of questions; let i = index" [class.selected]="isQuestionSelected(question.id || '')">
+              <!-- Selection Checkbox -->
+              <div class="question-checkbox">
+                <input type="checkbox"
+                       [checked]="isQuestionSelected(question.id || '')"
+                       (change)="toggleQuestionSelection(question.id || '')"
+                       class="form-check-input">
+              </div>
+
               <div class="question-header">
                 <span class="question-number">#{{ i + 1 }}</span>
                 <div class="question-badges">
@@ -424,3 +458,52 @@
   </div>
 </div>
 <div class="modal-backdrop fade" [class.show]="showDeleteModal" *ngIf="showDeleteModal"></div>
+
+<!-- Bulk Assign to Episode Modal -->
+<div class="modal fade modern-modal" [class.show]="showBulkAssignModal" [style.display]="showBulkAssignModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header gradient-header">
+        <h5 class="modal-title"><i class="feather icon-link me-2"></i>Assign Questions to Episode</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeBulkAssignModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="feather icon-info me-2"></i>
+          You are about to assign <strong>{{ selectedQuestions.size }}</strong> question(s) to an episode.
+        </div>
+
+        <form>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Season <span class="text-danger">*</span></label>
+            <select class="form-select modern-input" [(ngModel)]="bulkAssignData.seasonId"
+                    name="seasonId" (change)="onSeasonChange(bulkAssignData.seasonId)" required>
+              <option value="">Select Season</option>
+              <option *ngFor="let season of seasons" [value]="season.id">{{ season.name }}</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Episode <span class="text-danger">*</span></label>
+            <select class="form-select modern-input" [(ngModel)]="bulkAssignData.episodeId"
+                    name="episodeId" required [disabled]="!bulkAssignData.seasonId">
+              <option value="">Select Episode</option>
+              <option *ngFor="let episode of episodes" [value]="episode.id">{{ episode.name }}</option>
+            </select>
+            <small class="text-muted" *ngIf="!bulkAssignData.seasonId">Please select a season first</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeBulkAssignModal()">
+          <i class="feather icon-x me-1"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="bulkAssignToEpisode()"
+                [disabled]="!bulkAssignData.episodeId || !bulkAssignData.seasonId">
+          <i class="feather icon-check me-1"></i>Assign to Episode
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showBulkAssignModal" *ngIf="showBulkAssignModal"></div>
