@@ -84,7 +84,16 @@ export const NavigationItems: NavigationItem[] = [
         url: '/teams',
         classes: 'nav-item',
         icon: 'feather icon-shield'
-      }
+      },
+      {
+        id: 'reward-types',
+        title: 'Reward Types',
+        type: 'item',
+        url: '/reward-types',
+        classes: 'nav-item',
+        icon: 'feather icon-shield'
+      },
+
     ]
   },
   {

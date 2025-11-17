@@ -29,8 +29,6 @@ export class ContestantsComponent implements OnInit {
   deleteContestantId: string = '';
   deleteContestantName: string = '';
 
-  genders = ['Male', 'Female', 'Other'];
-
   constructor(
     private contestantsService: ContestantsService,
     private teamsService: TeamsService,
@@ -39,34 +37,26 @@ export class ContestantsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadContestants();
-    this.loadTeams();
+    //this.loadTeams();
   }
 
   getEmptyContestant(): Contestant {
     return {
-      name: '',
-      email: '',
-      phone: '',
-      age: undefined,
-      gender: '',
-      address: '',
-      teamId: '',
-      isActive: true,
-      totalScore: 0,
-      gamesPlayed: 0
+      name: ''
+
     };
   }
 
-  loadTeams(): void {
-    this.teamsService.getAllTeams().subscribe({
-      next: (response) => {
-        this.teams = response.data || [];
-      },
-      error: (err) => {
-        console.error('Error loading teams:', err);
-      }
-    });
-  }
+  // loadTeams(): void {
+  //   this.teamsService.getAllTeams().subscribe({
+  //     next: (response) => {
+  //       this.teams = response.data || [];
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading teams:', err);
+  //     }
+  //   });
+  // }
 
   loadContestants(): void {
     this.loading = true;
@@ -83,11 +73,11 @@ export class ContestantsComponent implements OnInit {
     });
   }
 
-  getTeamName(teamId: string): string {
-    if (!teamId) return 'No Team';
-    const team = this.teams.find(t => t._id === teamId);
-    return team ? team.name : 'Unknown Team';
-  }
+  // getTeamName(teamId: string): string {
+  //   if (!teamId) return 'No Team';
+  //   const team = this.teams.find(t => t._id === teamId);
+  //   return team ? team.name : 'Unknown Team';
+  // }
 
   // Modal methods
   openAddModal(): void {
@@ -111,7 +101,7 @@ export class ContestantsComponent implements OnInit {
   }
 
   openDeleteModal(contestant: Contestant): void {
-    this.deleteContestantId = contestant._id || '';
+    this.deleteContestantId = contestant.id || '';
     this.deleteContestantName = contestant.name;
     this.showDeleteModal = true;
   }
@@ -126,6 +116,7 @@ export class ContestantsComponent implements OnInit {
   addContestant(): void {
     this.loading = true;
     this.error = '';
+    // console.log(this.newContestant);
     this.contestantsService.createContestant(this.newContestant).subscribe({
       next: (response) => {
         this.loading = false;
@@ -140,11 +131,11 @@ export class ContestantsComponent implements OnInit {
   }
 
   updateContestant(): void {
-    if (!this.editContestant._id) return;
+    if (!this.editContestant.id) return;
 
     this.loading = true;
     this.error = '';
-    this.contestantsService.updateContestant(this.editContestant._id, this.editContestant).subscribe({
+    this.contestantsService.updateContestant(this.editContestant.id, this.editContestant).subscribe({
       next: (response) => {
         this.loading = false;
         this.closeEditModal();

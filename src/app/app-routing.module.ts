@@ -72,6 +72,10 @@ const routes: Routes = [
       {
         path: 'categories',
         loadComponent: () => import('./demo/pages/categories/categories.component').then((c) => c.CategoriesComponent)
+      },
+      {
+        path: 'reward-types',
+        loadComponent: () => import('./demo/pages/reward-type/reward-type.component').then((c) => c.RewardTypeComponent)
       }
     ]
   },

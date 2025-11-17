@@ -4,18 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface Contestant {
-  _id?: string;
+  id?: string;
   name: string;
-  email?: string;
-  phone?: string;
-  age?: number;
-  gender?: string;
-  address?: string;
-  photo?: string;
-  teamId?: string;
-  isActive?: boolean;
-  totalScore?: number;
-  gamesPlayed?: number;
+  code?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -29,7 +20,7 @@ export class ContestantsService {
 
   // Get all contestants
   getAllContestants(): Observable<any> {
-    return this.http.get<any>(`${environment.URL}/contestants`);
+    return this.http.get<any>(`${environment.URL}/competitors`);
   }
 
   // Get contestants by team
@@ -39,22 +30,22 @@ export class ContestantsService {
 
   // Get contestant by ID
   getContestantById(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.URL}/contestants/${id}`);
+    return this.http.get<any>(`${environment.URL}/ccompetitors/${id}`);
   }
 
   // Create new contestant
   createContestant(contestantData: Contestant): Observable<any> {
-    return this.http.post<any>(`${environment.URL}/contestants`, contestantData);
+    return this.http.post<any>(`${environment.URL}/competitors`, contestantData);
   }
 
   // Update contestant
   updateContestant(id: string, contestantData: Contestant): Observable<any> {
-    return this.http.put<any>(`${environment.URL}/contestants/${id}`, contestantData);
+    return this.http.put<any>(`${environment.URL}/competitors/${id}`, contestantData);
   }
 
   // Delete contestant
   deleteContestant(id: string): Observable<any> {
-    return this.http.delete<any>(`${environment.URL}/contestants/${id}`);
+    return this.http.delete<any>(`${environment.URL}/competitors/${id}`);
   }
 }
 

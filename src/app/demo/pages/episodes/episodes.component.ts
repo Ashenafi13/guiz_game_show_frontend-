@@ -24,7 +24,7 @@ export class EpisodesComponent implements OnInit {
 
   newEpisode: Episode = {
     seasonId: '',
-    title: '',
+    name: '',
     isActive: true
   };
 
@@ -65,6 +65,9 @@ export class EpisodesComponent implements OnInit {
       next: (response) => {
         this.episodes = response.data || response;
         this.loading = false;
+        this.episodes.forEach(episode => {
+          episode.isActive = episode.status === 'active'?true:false;
+        });
       },
       error: (err) => {
         this.error = err.error?.message || 'Failed to load episodes';
@@ -80,6 +83,9 @@ export class EpisodesComponent implements OnInit {
       next: (response) => {
         this.episodes = response.data || response;
         this.loading = false;
+        this.episodes.forEach(episode => {
+          episode.isActive = episode.status === 'active'?true:false;
+        });
       },
       error: (err) => {
         this.error = err.error?.message || 'Failed to load episodes';
@@ -99,7 +105,7 @@ export class EpisodesComponent implements OnInit {
   openAddModal(): void {
     this.newEpisode = {
       seasonId: this.selectedSeasonId || '',
-      title: '',
+      name: '',
       isActive: true
     };
     this.showAddModal = true;
@@ -131,6 +137,7 @@ export class EpisodesComponent implements OnInit {
 
   addEpisode(): void {
     this.loading = true;
+    this.newEpisode.isActive?this.newEpisode.status = 'active':this.newEpisode.status = 'inactive';
     this.episodesService.createEpisode(this.newEpisode).subscribe({
       next: () => {
         this.loading = false;
@@ -149,10 +156,11 @@ export class EpisodesComponent implements OnInit {
   }
 
   updateEpisode(): void {
-    if (!this.selectedEpisode || !this.selectedEpisode._id) return;
-
+    if (!this.selectedEpisode || !this.selectedEpisode.id) return;
+    this.selectedEpisode.isActive?this.selectedEpisode.status = 'active':this.selectedEpisode.status = 'inactive';
     this.loading = true;
-    this.episodesService.updateEpisode(this.selectedEpisode._id, this.selectedEpisode).subscribe({
+
+    this.episodesService.updateEpisode(this.selectedEpisode.id, this.selectedEpisode).subscribe({
       next: () => {
         this.loading = false;
         this.closeEditModal();
@@ -170,10 +178,10 @@ export class EpisodesComponent implements OnInit {
   }
 
   deleteEpisode(): void {
-    if (!this.selectedEpisode || !this.selectedEpisode._id) return;
+    if (!this.selectedEpisode || !this.selectedEpisode.id) return;
 
     this.loading = true;
-    this.episodesService.deleteEpisode(this.selectedEpisode._id).subscribe({
+    this.episodesService.deleteEpisode(this.selectedEpisode.id).subscribe({
       next: () => {
         this.loading = false;
         this.closeDeleteModal();

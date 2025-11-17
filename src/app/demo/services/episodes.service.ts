@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface Episode {
-  _id?: string;
+  id?: string;
   seasonId: string;
-  title: string;
+  name: string;
   isActive?: boolean;
   status?: string;
   createdAt?: string;

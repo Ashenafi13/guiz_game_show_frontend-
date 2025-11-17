@@ -50,7 +50,7 @@
             <tbody>
               <tr *ngFor="let episode of episodes; let i = index">
                 <td>{{ i + 1 }}</td>
-                <td>{{ episode.title }}</td>
+                <td>{{ episode.name }}</td>
                 <td>
                   <span class="badge bg-info">{{ getSeasonName(episode.seasonId) }}</span>
                 </td>
@@ -101,7 +101,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="newEpisode.title" name="title" required>
+            <input type="text" class="form-control" [(ngModel)]="newEpisode.name" name="title" required>
           </div>
           <div class="mb-3">
             <div class="form-check form-switch">
@@ -113,7 +113,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="addEpisode()" [disabled]="!newEpisode.title || !newEpisode.seasonId || loading">
+        <button type="button" class="btn btn-primary" (click)="addEpisode()" [disabled]="!newEpisode.name || !newEpisode.seasonId || loading">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
           Add Episode
         </button>
@@ -142,7 +142,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="selectedEpisode.title" name="title" required>
+            <input type="text" class="form-control" [(ngModel)]="selectedEpisode.name" name="title" required>
           </div>
           <div class="mb-3">
             <div class="form-check form-switch">
@@ -154,7 +154,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="updateEpisode()" [disabled]="!selectedEpisode?.title || !selectedEpisode?.seasonId || loading">
+        <button type="button" class="btn btn-primary" (click)="updateEpisode()" [disabled]="!selectedEpisode?.name || !selectedEpisode?.seasonId || loading">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
           Update Episode
         </button>

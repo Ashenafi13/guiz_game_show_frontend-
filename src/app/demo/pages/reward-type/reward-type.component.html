@@ -3,10 +3,10 @@
     <div class="col-sm-12">
       <div class="card">
         <div class="card-header">
-          <h5>Categories Management</h5>
+          <h5>Reward Types Management</h5>
           <div class="card-header-right">
             <button class="btn btn-primary btn-sm" (click)="openAddModal()">
-              <i class="feather icon-plus me-1"></i>Add Category
+              <i class="feather icon-plus me-1"></i>Add Reward Type
             </button>
           </div>
         </div>
@@ -23,26 +23,26 @@
           </div>
 
           <div *ngIf="!loading" class="row">
-            <div class="col-md-4 col-lg-3 mb-3" *ngFor="let category of categories; let i = index">
-              <div class="card category-card" [style.border-left]="'4px solid ' + category.color">
+            <div class="col-md-4 col-lg-3 mb-3" *ngFor="let rewardType of rewardTypes; let i = index">
+              <div class="card reward-type-card">
                 <div class="card-body">
-                  <h6 class="mb-1">{{ category.name }}</h6>
-                  <p class="text-muted small mb-3">{{ category.description || 'No description' }}</p>
+                  <h6 class="mb-1">{{ rewardType.name }}</h6>
+                  <p class="text-muted small mb-3">{{ rewardType.measurement || 'No measurement' }}</p>
                   <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary flex-fill" (click)="openEditModal(category)">
+                    <button class="btn btn-sm btn-outline-primary flex-fill" (click)="openEditModal(rewardType)">
                       <i class="feather icon-edit"></i> Edit
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(category)">
+                    <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(rewardType)">
                       <i class="feather icon-trash-2"></i>
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-12" *ngIf="categories.length === 0">
+            <div class="col-12" *ngIf="rewardTypes.length === 0">
               <div class="text-center py-5">
                 <i class="feather icon-inbox" style="font-size: 48px; color: #ccc;"></i>
-                <p class="mt-2 text-muted">No categories found</p>
+                <p class="mt-2 text-muted">No reward types found</p>
               </div>
             </div>
           </div>
@@ -52,25 +52,29 @@
   </div>
 </div>
 
-<!-- Add Category Modal -->
+<!-- Add Reward Type Modal -->
 <div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Add New Category</h5>
+        <h5 class="modal-title">Add New Reward Type</h5>
         <button type="button" class="btn-close" (click)="closeAddModal()"></button>
       </div>
       <div class="modal-body">
         <form>
           <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="newCategory.name" name="name" required>
+            <input type="text" class="form-control" [(ngModel)]="newRewardType.name" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Measurement <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="newRewardType.measurement" name="measurement" required>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="addCategory()">Add Category</button>
+        <button type="button" class="btn btn-primary" (click)="addRewardType()">Add Reward Type</button>
       </div>
     </div>
   </div>
@@ -82,22 +86,24 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Edit Category</h5>
+        <h5 class="modal-title">Edit Reward Type</h5>
         <button type="button" class="btn-close" (click)="closeEditModal()"></button>
       </div>
       <div class="modal-body">
         <form>
           <div class="mb-3">
             <label class="form-label">Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" [(ngModel)]="editCategory.name" name="name" required>
+            <input type="text" class="form-control" [(ngModel)]="editRewardType.name" name="name" required>
           </div>
-
-
+          <div class="mb-3">
+            <label class="form-label">Measurement <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" [(ngModel)]="editRewardType.measurement" name="measurement" required>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="updateCategory()">Update Category</button>
+        <button type="button" class="btn btn-primary" (click)="updateRewardType()">Update Reward Type</button>
       </div>
     </div>
   </div>
@@ -109,12 +115,12 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Delete Category</h5>
+        <h5 class="modal-title">Delete Reward Type</h5>
         <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this category?</p>
-        <p class="text-muted"><strong>{{ deleteCategoryName }}</strong></p>
+        <p>Are you sure you want to delete this reward type?</p>
+        <p class="text-muted"><strong>{{ deleteRewardTypeName }}</strong></p>
         <div class="alert alert-warning">
           <i class="feather icon-alert-triangle me-2"></i>This action cannot be undone.
         </div>
@@ -127,4 +133,5 @@
   </div>
 </div>
 <div class="modal-backdrop fade" [class.show]="showDeleteModal" *ngIf="showDeleteModal"></div>
+
 

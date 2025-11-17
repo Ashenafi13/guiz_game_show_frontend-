@@ -74,7 +74,7 @@ export class CategoriesComponent implements OnInit {
   }
 
   openDeleteModal(category: Category): void {
-    this.deleteCategoryId = category._id || '';
+    this.deleteCategoryId = category.id || '';
     this.deleteCategoryName = category.name;
     this.showDeleteModal = true;
   }
@@ -100,10 +100,10 @@ export class CategoriesComponent implements OnInit {
   }
 
   updateCategory(): void {
-    if (!this.editCategory._id) return;
+    if (!this.editCategory.id) return;
     this.loading = true;
     this.error = '';
-    this.categoriesService.updateCategory(this.editCategory._id, this.editCategory).subscribe({
+    this.categoriesService.updateCategory(this.editCategory.id, this.editCategory).subscribe({
       next: (response) => {
         this.loading = false;
         this.closeEditModal();
