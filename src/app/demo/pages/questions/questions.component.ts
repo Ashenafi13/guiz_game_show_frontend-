@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { QuestionsService, Question } from '../../services/questions.service';
-import { EpisodesService } from '../../services/episodes.service';
+import { QuestionsService, Question, QuestionChoice, Pagination } from '../../services/questions.service';
+import { CategoriesService, Category } from '../../services/categories.service';
+import { RewardTypeService, RewardType } from '../../services/reawrd-type.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-questions',
@@ -14,12 +16,25 @@ import { EpisodesService } from '../../services/episodes.service';
 })
 export class QuestionsComponent implements OnInit {
   questions: Question[] = [];
-  episodes: any[] = [];
+  categories: Category[] = [];
+  rewardTypes: RewardType[] = [];
   loading: boolean = false;
   error: string = '';
+  environment = environment;
+  Math = Math; // For template usage
+
+  // Pagination
+  pagination: Pagination = {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  };
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
 
   // Filter
-  selectedEpisodeId: string = '';
+  selectedCategoryId: string = '';
 
   // Modal states
   showAddModal: boolean = false;
@@ -27,64 +42,127 @@ export class QuestionsComponent implements OnInit {
   showDeleteModal: boolean = false;
 
   // Form data
-  newQuestion: Question = this.getEmptyQuestion();
-  editQuestion: Question = this.getEmptyQuestion();
+  newQuestion: any = this.getEmptyQuestion();
+  editQuestion: any = this.getEmptyQuestion();
   deleteQuestionId: string = '';
   deleteQuestionText: string = '';
 
+  // File upload
+  selectedFile: File | null = null;
+  filePreviewUrl: string | null = null;
+  editFilePreviewUrl: string | null = null;
+
   // Question types
   questionTypes = [
-    { value: 'multiple-choice', label: 'Multiple Choice' },
-    { value: 'true-false', label: 'True/False' },
-    { value: 'short-answer', label: 'Short Answer' }
+    { value: 'multiple_choice', label: 'Multiple Choice' },
+    { value: 'true_false', label: 'True/False' },
+    { value: 'short_answer', label: 'Short Answer' }
   ];
 
-  difficulties = ['easy', 'medium', 'hard'];
+  fileTypes = [
+    { value: 'text', label: 'Text Only' },
+    { value: 'image', label: 'Image' },
+    { value: 'video', label: 'Video' },
+    { value: 'audio', label: 'Audio' }
+  ];
 
   constructor(
     private questionsService: QuestionsService,
-    private episodesService: EpisodesService,
+    private categoriesService: CategoriesService,
+    private rewardTypeService: RewardTypeService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.loadEpisodes();
+    this.loadCategories();
+    this.loadRewardTypes();
 
-    // Check if there's an episodeId query parameter
+    // Check if there's a categoryId query parameter
     this.route.queryParams.subscribe(params => {
-      if (params['episodeId']) {
-        this.selectedEpisodeId = params['episodeId'];
-        this.loadQuestionsByEpisode();
+      if (params['categoryId']) {
+        this.selectedCategoryId = params['categoryId'];
+        this.loadQuestionsByCategory();
       } else {
         this.loadAllQuestions();
       }
     });
   }
 
-  getEmptyQuestion(): Question {
+  // Pagination methods
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    if (this.selectedCategoryId) {
+      this.loadQuestionsByCategory();
+    } else {
+      this.loadAllQuestions();
+    }
+  }
+
+  onItemsPerPageChange(): void {
+    this.currentPage = 1; // Reset to first page
+    if (this.selectedCategoryId) {
+      this.loadQuestionsByCategory();
+    } else {
+      this.loadAllQuestions();
+    }
+  }
+
+  get totalPages(): number {
+    return this.pagination.totalPages;
+  }
+
+  get pages(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  getEmptyQuestion(): any {
     return {
-      episodeId: '',
-      questionText: '',
-      questionType: 'multiple-choice',
-      options: ['', '', '', ''],
-      correctAnswer: '',
-      points: 10,
-      difficulty: 'medium',
-      timeLimit: 30,
-      explanation: '',
-      order: 1,
-      isActive: true
+      question: '',
+      categoryId: '',
+      type: 'multiple_choice',
+      rewardType: '',
+      point: 10,
+      fileType: 'text',
+      choices: [
+        { choose: '', isAnswer: true },
+        { choose: '', isAnswer: false },
+        { choose: '', isAnswer: false },
+        { choose: '', isAnswer: false }
+      ]
     };
   }
 
-  loadEpisodes(): void {
-    this.episodesService.getAllEpisodes().subscribe({
+  loadCategories(): void {
+    this.categoriesService.getAllCategories().subscribe({
       next: (response) => {
-        this.episodes = response.data || [];
+        this.categories = response.data || [];
       },
       error: (err) => {
-        console.error('Error loading episodes:', err);
+        console.error('Error loading categories:', err);
+      }
+    });
+  }
+
+  loadRewardTypes(): void {
+    this.rewardTypeService.getAllRewardTypes().subscribe({
+      next: (response) => {
+        this.rewardTypes = response.data || [];
+      },
+      error: (err) => {
+        console.error('Error loading reward types:', err);
       }
     });
   }
@@ -92,46 +170,128 @@ export class QuestionsComponent implements OnInit {
   loadAllQuestions(): void {
     this.loading = true;
     this.error = '';
-    this.questionsService.getAllQuestions().subscribe({
-      next: (response) => {
-        this.questions = response.data || [];
+    console.log('Loading questions - Page:', this.currentPage, 'Limit:', this.itemsPerPage);
+    this.questionsService.getAllQuestions(this.currentPage, this.itemsPerPage).subscribe({
+      next: (response: any) => {
+        console.log('Questions API Response:', response);
+
+        // Handle new paginated response structure
+        if (response && response.success && response.data && response.data.data) {
+          this.questions = response.data.data || [];
+          this.pagination = response.data.pagination || {
+            total: this.questions.length,
+            page: this.currentPage,
+            limit: this.itemsPerPage,
+            totalPages: 1
+          };
+          console.log('Questions loaded (paginated):', this.questions.length);
+          console.log('Pagination:', this.pagination);
+        }
+        // Handle old response structure (fallback)
+        else if (response && response.data && Array.isArray(response.data)) {
+          this.questions = response.data;
+          this.pagination = {
+            total: this.questions.length,
+            page: 1,
+            limit: this.questions.length,
+            totalPages: 1
+          };
+          console.log('Questions loaded (legacy format):', this.questions.length);
+        }
+        // Handle direct array response
+        else if (Array.isArray(response)) {
+          this.questions = response;
+          this.pagination = {
+            total: this.questions.length,
+            page: 1,
+            limit: this.questions.length,
+            totalPages: 1
+          };
+          console.log('Questions loaded (direct array):', this.questions.length);
+        } else {
+          console.warn('Response structure unexpected:', response);
+          this.questions = [];
+        }
+
         this.loading = false;
       },
       error: (err) => {
+        console.error('Error loading questions:', err);
         this.error = err.error?.message || 'Failed to load questions';
         this.loading = false;
       }
     });
   }
 
-  loadQuestionsByEpisode(): void {
-    if (!this.selectedEpisodeId) {
+  loadQuestionsByCategory(): void {
+    if (!this.selectedCategoryId) {
       this.loadAllQuestions();
       return;
     }
 
     this.loading = true;
     this.error = '';
-    this.questionsService.getQuestionsByEpisode(this.selectedEpisodeId).subscribe({
-      next: (response) => {
-        this.questions = response.data || [];
+    console.log('Loading questions by category:', this.selectedCategoryId, 'Page:', this.currentPage, 'Limit:', this.itemsPerPage);
+    this.questionsService.getQuestionsByCategory(this.selectedCategoryId, this.currentPage, this.itemsPerPage).subscribe({
+      next: (response: any) => {
+        console.log('Questions by Category API Response:', response);
+
+        // Handle new paginated response structure
+        if (response && response.success && response.data && response.data.data) {
+          this.questions = response.data.data || [];
+          this.pagination = response.data.pagination || {
+            total: this.questions.length,
+            page: this.currentPage,
+            limit: this.itemsPerPage,
+            totalPages: 1
+          };
+          console.log('Questions loaded (paginated):', this.questions.length);
+          console.log('Pagination:', this.pagination);
+        }
+        // Handle old response structure (fallback)
+        else if (response && response.data && Array.isArray(response.data)) {
+          this.questions = response.data;
+          this.pagination = {
+            total: this.questions.length,
+            page: 1,
+            limit: this.questions.length,
+            totalPages: 1
+          };
+          console.log('Questions loaded (legacy format):', this.questions.length);
+        }
+        // Handle direct array response
+        else if (Array.isArray(response)) {
+          this.questions = response;
+          this.pagination = {
+            total: this.questions.length,
+            page: 1,
+            limit: this.questions.length,
+            totalPages: 1
+          };
+          console.log('Questions loaded (direct array):', this.questions.length);
+        } else {
+          console.warn('Response structure unexpected:', response);
+          this.questions = [];
+        }
+
         this.loading = false;
       },
       error: (err) => {
+        console.error('Error loading questions by category:', err);
         this.error = err.error?.message || 'Failed to load questions';
         this.loading = false;
       }
     });
   }
 
-  onEpisodeFilterChange(): void {
-    if (this.selectedEpisodeId) {
+  onCategoryFilterChange(): void {
+    if (this.selectedCategoryId) {
       this.router.navigate([], {
         relativeTo: this.route,
-        queryParams: { episodeId: this.selectedEpisodeId },
+        queryParams: { categoryId: this.selectedCategoryId },
         queryParamsHandling: 'merge'
       });
-      this.loadQuestionsByEpisode();
+      this.loadQuestionsByCategory();
     } else {
       this.router.navigate([], {
         relativeTo: this.route,
@@ -141,38 +301,52 @@ export class QuestionsComponent implements OnInit {
     }
   }
 
-  getEpisodeName(episodeId: string): string {
-    const episode = this.episodes.find(e => e._id === episodeId);
-    return episode ? episode.title : 'Unknown Episode';
+  getCategoryName(categoryId: string): string {
+    const category = this.categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Unknown Category';
+  }
+
+  getRewardTypeName(rewardTypeId: string): string {
+    const rewardType = this.rewardTypes.find(r => r.id === rewardTypeId);
+    return rewardType ? rewardType.name : 'Unknown';
   }
 
   // Modal methods
   openAddModal(): void {
     this.newQuestion = this.getEmptyQuestion();
-    if (this.selectedEpisodeId) {
-      this.newQuestion.episodeId = this.selectedEpisodeId;
+    if (this.selectedCategoryId) {
+      this.newQuestion.categoryId = this.selectedCategoryId;
     }
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
     this.showAddModal = true;
   }
 
   closeAddModal(): void {
     this.showAddModal = false;
     this.newQuestion = this.getEmptyQuestion();
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
   }
 
   openEditModal(question: Question): void {
-    this.editQuestion = { ...question };
+    this.editQuestion = {
+      ...question,
+      choices: question.choices ? [...question.choices] : []
+    };
+    this.editFilePreviewUrl = question.filepath ? `${environment.IP}${question.filepath}` : null;
     this.showEditModal = true;
   }
 
   closeEditModal(): void {
     this.showEditModal = false;
     this.editQuestion = this.getEmptyQuestion();
+    this.editFilePreviewUrl = null;
   }
 
   openDeleteModal(question: Question): void {
-    this.deleteQuestionId = question._id || '';
-    this.deleteQuestionText = question.questionText;
+    this.deleteQuestionId = question._id || question.id || '';
+    this.deleteQuestionText = question.question || question.questionText || '';
     this.showDeleteModal = true;
   }
 
@@ -182,16 +356,87 @@ export class QuestionsComponent implements OnInit {
     this.deleteQuestionText = '';
   }
 
+  // File upload handling
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.filePreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      // Auto-detect file type
+      if (file.type.startsWith('image/')) {
+        this.newQuestion.fileType = 'image';
+      } else if (file.type.startsWith('video/')) {
+        this.newQuestion.fileType = 'video';
+      } else if (file.type.startsWith('audio/')) {
+        this.newQuestion.fileType = 'audio';
+      }
+    }
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
+    this.newQuestion.fileType = 'text';
+  }
+
   // CRUD operations
   addQuestion(): void {
+    // Validate form
+    if (!this.newQuestion.question || !this.newQuestion.categoryId || !this.newQuestion.rewardType) {
+      this.error = 'Please fill in all required fields';
+      return;
+    }
+
+    // Validate choices for multiple choice
+    if (this.newQuestion.type === 'multiple_choice') {
+      const hasCorrectAnswer = this.newQuestion.choices.some((c: QuestionChoice) => c.isAnswer);
+      if (!hasCorrectAnswer) {
+        this.error = 'Please select at least one correct answer';
+        return;
+      }
+      const hasEmptyChoice = this.newQuestion.choices.some((c: QuestionChoice) => !c.choose.trim());
+      if (hasEmptyChoice) {
+        this.error = 'Please fill in all choices';
+        return;
+      }
+    }
+
     this.loading = true;
     this.error = '';
-    this.questionsService.createQuestion(this.newQuestion).subscribe({
+
+    // Create FormData
+    const formData = new FormData();
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile);
+    }
+
+    formData.append('question', this.newQuestion.question);
+    formData.append('categoryId', this.newQuestion.categoryId);
+    formData.append('type', this.newQuestion.type);
+    formData.append('rewardType', this.newQuestion.rewardType);
+    formData.append('point', this.newQuestion.point.toString());
+
+    // Convert choices to the format expected by the API
+    const choicesForApi = this.newQuestion.choices.map((c: QuestionChoice) => ({
+      choose: c.choose,
+      isAnswer: c.isAnswer ? 1 : 0
+    }));
+    formData.append('choices', JSON.stringify(choicesForApi));
+
+    this.questionsService.createQuestion(formData).subscribe({
       next: (response) => {
         this.loading = false;
         this.closeAddModal();
-        if (this.selectedEpisodeId) {
-          this.loadQuestionsByEpisode();
+        if (this.selectedCategoryId) {
+          this.loadQuestionsByCategory();
         } else {
           this.loadAllQuestions();
         }
@@ -204,16 +449,33 @@ export class QuestionsComponent implements OnInit {
   }
 
   updateQuestion(): void {
-    if (!this.editQuestion._id) return;
+    const questionId = this.editQuestion._id || this.editQuestion.id;
+    if (!questionId) return;
 
     this.loading = true;
     this.error = '';
-    this.questionsService.updateQuestion(this.editQuestion._id, this.editQuestion).subscribe({
+
+    // Create FormData for update
+    const formData = new FormData();
+
+    formData.append('question', this.editQuestion.question);
+    formData.append('categoryId', this.editQuestion.categoryId);
+    formData.append('type', this.editQuestion.type);
+    formData.append('rewardType', this.editQuestion.rewardType);
+    formData.append('point', this.editQuestion.point.toString());
+
+    const choicesForApi = this.editQuestion.choices.map((c: QuestionChoice) => ({
+      choose: c.choose,
+      isAnswer: c.isAnswer ? 1 : 0
+    }));
+    formData.append('choices', JSON.stringify(choicesForApi));
+
+    this.questionsService.updateQuestion(questionId, formData).subscribe({
       next: (response) => {
         this.loading = false;
         this.closeEditModal();
-        if (this.selectedEpisodeId) {
-          this.loadQuestionsByEpisode();
+        if (this.selectedCategoryId) {
+          this.loadQuestionsByCategory();
         } else {
           this.loadAllQuestions();
         }
@@ -234,8 +496,8 @@ export class QuestionsComponent implements OnInit {
       next: (response) => {
         this.loading = false;
         this.closeDeleteModal();
-        if (this.selectedEpisodeId) {
-          this.loadQuestionsByEpisode();
+        if (this.selectedCategoryId) {
+          this.loadQuestionsByCategory();
         } else {
           this.loadAllQuestions();
         }
@@ -247,30 +509,51 @@ export class QuestionsComponent implements OnInit {
     });
   }
 
-  // Helper methods for options
-  addOption(): void {
-    if (!this.newQuestion.options) {
-      this.newQuestion.options = [];
+  // Helper methods for choices
+  addChoice(): void {
+    if (!this.newQuestion.choices) {
+      this.newQuestion.choices = [];
     }
-    this.newQuestion.options.push('');
+    this.newQuestion.choices.push({ choose: '', isAnswer: false });
   }
 
-  removeOption(index: number): void {
-    if (this.newQuestion.options) {
-      this.newQuestion.options.splice(index, 1);
+  removeChoice(index: number): void {
+    if (this.newQuestion.choices && this.newQuestion.choices.length > 2) {
+      this.newQuestion.choices.splice(index, 1);
     }
   }
 
-  addEditOption(): void {
-    if (!this.editQuestion.options) {
-      this.editQuestion.options = [];
-    }
-    this.editQuestion.options.push('');
+  setCorrectAnswer(index: number): void {
+    // For multiple choice, only one answer can be correct
+    this.newQuestion.choices.forEach((choice: QuestionChoice, i: number) => {
+      choice.isAnswer = i === index;
+    });
   }
 
-  removeEditOption(index: number): void {
-    if (this.editQuestion.options) {
-      this.editQuestion.options.splice(index, 1);
+  addEditChoice(): void {
+    if (!this.editQuestion.choices) {
+      this.editQuestion.choices = [];
     }
+    this.editQuestion.choices.push({ choose: '', isAnswer: false });
+  }
+
+  removeEditChoice(index: number): void {
+    if (this.editQuestion.choices && this.editQuestion.choices.length > 2) {
+      this.editQuestion.choices.splice(index, 1);
+    }
+  }
+
+  setEditCorrectAnswer(index: number): void {
+    this.editQuestion.choices.forEach((choice: QuestionChoice, i: number) => {
+      choice.isAnswer = i === index;
+    });
+  }
+
+  getCorrectAnswerText(question: Question): string {
+    if (!question.choices || question.choices.length === 0) {
+      return 'N/A';
+    }
+    const correctChoice = question.choices.find(c => c.isAnswer);
+    return correctChoice ? correctChoice.choose : 'N/A';
   }
 }

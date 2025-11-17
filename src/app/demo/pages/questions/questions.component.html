@@ -1,24 +1,29 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-12">
-      <div class="card">
-        <div class="card-header">
-          <h5>Questions Management</h5>
-          <div class="card-header-right">
-            <div class="d-flex justify-content-end gap-2">
-              <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedEpisodeId" (change)="onEpisodeFilterChange()">
-                <option value="">All Episodes</option>
-                <option *ngFor="let episode of episodes" [value]="episode._id">{{ episode.title }}</option>
+      <div class="card modern-card">
+        <div class="card-header gradient-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="header-text">
+              <h5 class="mb-1"><i class="feather icon-help-circle me-2"></i>Questions Management</h5>
+              <small class="d-block text-white-50">Create and manage quiz questions with multimedia support</small>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <select class="form-select form-select-sm modern-select" style="width: auto;" [(ngModel)]="selectedCategoryId" (change)="onCategoryFilterChange()">
+                <option value="">All Categories</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
               </select>
-              <button class="btn btn-primary btn-sm" (click)="openAddModal()">
+              <button class="btn btn-light btn-sm add-btn" (click)="openAddModal()">
                 <i class="feather icon-plus me-1"></i>Add Question
               </button>
             </div>
           </div>
         </div>
         <div class="card-body">
+         
+
           <!-- Error Alert -->
-          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show modern-alert" role="alert">
             <i class="feather icon-alert-circle me-2"></i>{{ error }}
             <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
           </div>
@@ -30,70 +35,152 @@
             </div>
           </div>
 
-          <!-- Questions Table -->
-          <div *ngIf="!loading" class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Question</th>
-                  <th>Episode</th>
-                  <th>Type</th>
-                  <th>Difficulty</th>
-                  <th>Points</th>
-                  <th>Time Limit</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let question of questions; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>
-                    <div class="text-truncate" style="max-width: 300px;" [title]="question.questionText">
-                      {{ question.questionText }}
-                    </div>
-                  </td>
-                  <td>{{ getEpisodeName(question.episodeId) }}</td>
-                  <td>
-                    <span class="badge bg-info">{{ question.questionType }}</span>
-                  </td>
-                  <td>
-                    <span class="badge"
-                      [ngClass]="{
-                        'bg-success': question.difficulty === 'easy',
-                        'bg-warning': question.difficulty === 'medium',
-                        'bg-danger': question.difficulty === 'hard'
-                      }">
-                      {{ question.difficulty }}
-                    </span>
-                  </td>
-                  <td>{{ question.points }}</td>
-                  <td>{{ question.timeLimit }}s</td>
-                  <td>
-                    <span class="badge" [ngClass]="question.isActive ? 'bg-success' : 'bg-secondary'">
-                      {{ question.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="d-flex gap-2">
-                      <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(question)" title="Edit">
-                        <i class="feather icon-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(question)" title="Delete">
-                        <i class="feather icon-trash-2"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr *ngIf="questions.length === 0">
-                  <td colspan="9" class="text-center py-4">
-                    <i class="feather icon-inbox" style="font-size: 48px; color: #ccc;"></i>
-                    <p class="mt-2 text-muted">No questions found</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Questions Grid -->
+          <div *ngIf="!loading" class="questions-grid">
+            <div class="question-card" *ngFor="let question of questions; let i = index">
+              <div class="question-header">
+                <span class="question-number">#{{ i + 1 }}</span>
+                <div class="question-badges">
+                  <span class="badge badge-type">{{ question.type || 'multiple_choice' }}</span>
+                  <span class="badge badge-points">
+                    <i class="feather icon-star"></i> {{ question.point || 0 }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Media Preview with Placeholder -->
+              <div class="question-media">
+                <img *ngIf="question.filepath && (question.filepath.includes('.jpg') || question.filepath.includes('.png') || question.filepath.includes('.jpeg') || question.filepath.includes('.gif'))"
+                     [src]="environment.IP + question.filepath"
+                     alt="Question media"
+                     class="media-preview">
+                <video *ngIf="question.filepath && (question.filepath.includes('.mp4') || question.filepath.includes('.webm'))"
+                       [src]="environment.IP + question.filepath"
+                       controls
+                       class="media-preview"></video>
+                <audio *ngIf="question.filepath && (question.filepath.includes('.mp3') || question.filepath.includes('.wav'))"
+                       [src]="environment.IP + question.filepath"
+                       controls
+                       class="audio-preview"></audio>
+                <div *ngIf="!question.filepath" class="media-placeholder">
+                  <i class="feather icon-file-text"></i>
+                  <span>Text Only</span>
+                </div>
+              </div>
+
+              <div class="question-content">
+                <h6 class="question-text">{{ question.question }}</h6>
+
+                <div class="question-meta">
+                  <span class="meta-item">
+                    <i class="feather icon-tag"></i>
+                    {{ question.categoryName || getCategoryName(question.categoryId || '') }}
+                  </span>
+                  <span class="meta-item">
+                    <i class="feather icon-award"></i>
+                    {{ question.rewardTypeName || getRewardTypeName(question.rewardType || '') }}
+                  </span>
+                </div>
+
+                <!-- Choices Preview - Show only first 3 with count -->
+                <div class="choices-preview" *ngIf="question.choices && question.choices.length > 0">
+                  <div class="choices-label">
+                    <i class="feather icon-list"></i>
+                    <span>Answer Choices ({{ question.choices.length }})</span>
+                  </div>
+                  <div class="choice-item" *ngFor="let choice of question.choices.slice(0, 3)" [class.correct]="choice.isAnswer">
+                    <i class="feather" [ngClass]="choice.isAnswer ? 'icon-check-circle' : 'icon-circle'"></i>
+                    <span>{{ choice.choose }}</span>
+                  </div>
+                  <div class="more-choices" *ngIf="question.choices.length > 3">
+                    +{{ question.choices.length - 3 }} more choices
+                  </div>
+                </div>
+              </div>
+
+              <div class="question-actions">
+                <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(question)" title="Edit">
+                  <i class="feather icon-edit"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(question)" title="Delete">
+                  <i class="feather icon-trash-2"></i> Delete
+                </button>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="questions.length === 0">
+              <i class="feather icon-inbox"></i>
+              <h5>No questions found</h5>
+              <p>Start by creating your first question</p>
+              <button class="btn btn-primary" (click)="openAddModal()">
+                <i class="feather icon-plus me-1"></i>Create Question
+              </button>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="card-footer" *ngIf="questions.length > 0">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="pagination-info">
+                <span class="text-muted">
+                  Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+                  {{ Math.min(currentPage * itemsPerPage, pagination.total) }} of
+                  {{ pagination.total }} questions
+                </span>
+              </div>
+
+              <div class="d-flex align-items-center gap-3">
+                <!-- Items per page selector -->
+                <div class="d-flex align-items-center gap-2">
+                  <label class="text-muted mb-0">Items per page:</label>
+                  <select class="form-select form-select-sm" style="width: auto;"
+                          [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+                    <option [value]="5">5</option>
+                    <option [value]="10">10</option>
+                    <option [value]="20">20</option>
+                    <option [value]="50">50</option>
+                  </select>
+                </div>
+
+                <!-- Pagination controls -->
+                <nav aria-label="Page navigation">
+                  <ul class="pagination mb-0">
+                    <!-- First page -->
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="currentPage !== 1 && onPageChange(1)" aria-label="First">
+                        <i class="feather icon-chevrons-left"></i>
+                      </a>
+                    </li>
+
+                    <!-- Previous page -->
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                      <a class="page-link" (click)="currentPage !== 1 && onPageChange(currentPage - 1)" aria-label="Previous">
+                        <i class="feather icon-chevron-left"></i>
+                      </a>
+                    </li>
+
+                    <!-- Page numbers -->
+                    <li class="page-item" *ngFor="let page of pages" [class.active]="page === currentPage">
+                      <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+                    </li>
+
+                    <!-- Next page -->
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                      <a class="page-link" (click)="currentPage !== totalPages && onPageChange(currentPage + 1)" aria-label="Next">
+                        <i class="feather icon-chevron-right"></i>
+                      </a>
+                    </li>
+
+                    <!-- Last page -->
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                      <a class="page-link" (click)="currentPage !== totalPages && onPageChange(totalPages)" aria-label="Last">
+                        <i class="feather icon-chevrons-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -102,85 +189,106 @@
 </div>
 
 <!-- Add Question Modal -->
-<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+<div class="modal fade modern-modal" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add New Question</h5>
-        <button type="button" class="btn-close" (click)="closeAddModal()"></button>
+      <div class="modal-header gradient-header">
+        <h5 class="modal-title text-white"><i class="feather icon-plus-circle me-2"></i>Add New Question</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()"></button>
       </div>
       <div class="modal-body">
         <form>
           <div class="row">
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Episode <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="newQuestion.episodeId" name="episodeId" required>
-                <option value="">Select Episode</option>
-                <option *ngFor="let episode of episodes" [value]="episode._id">{{ episode.title }}</option>
+            <!-- Question Text -->
+            <div class="col-md-12 mb-4">
+              <label class="form-label fw-bold">Question Text <span class="text-danger">*</span></label>
+              <textarea class="form-control modern-input" [(ngModel)]="newQuestion.question" name="question" rows="3"
+                        placeholder="Enter your question here..." required></textarea>
+            </div>
+
+            <!-- Category and Reward Type -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="newQuestion.categoryId" name="categoryId" required>
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
               </select>
             </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Question Text <span class="text-danger">*</span></label>
-              <textarea class="form-control" [(ngModel)]="newQuestion.questionText" name="questionText" rows="3" required></textarea>
-            </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Question Type <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="newQuestion.questionType" name="questionType" required>
+              <label class="form-label fw-bold">Reward Type <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="newQuestion.rewardType" name="rewardType" required>
+                <option value="">Select Reward Type</option>
+                <option *ngFor="let reward of rewardTypes" [value]="reward.id">{{ reward.name }}</option>
+              </select>
+            </div>
+
+            <!-- Question Type and Points -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Question Type <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="newQuestion.type" name="type" required>
                 <option *ngFor="let type of questionTypes" [value]="type.value">{{ type.label }}</option>
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Difficulty <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="newQuestion.difficulty" name="difficulty" required>
-                <option *ngFor="let diff of difficulties" [value]="diff">{{ diff }}</option>
-              </select>
+              <label class="form-label fw-bold">Points</label>
+              <input type="number" class="form-control modern-input" [(ngModel)]="newQuestion.point" name="point" min="1" placeholder="10">
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Points</label>
-              <input type="number" class="form-control" [(ngModel)]="newQuestion.points" name="points" min="1">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Time Limit (seconds)</label>
-              <input type="number" class="form-control" [(ngModel)]="newQuestion.timeLimit" name="timeLimit" min="1">
-            </div>
-            <div class="col-md-12 mb-3" *ngIf="newQuestion.questionType === 'multiple-choice'">
-              <label class="form-label">Options</label>
-              <div *ngFor="let option of newQuestion.options; let i = index" class="input-group mb-2">
-                <input type="text" class="form-control" [(ngModel)]="newQuestion.options![i]" [name]="'option' + i" placeholder="Option {{ i + 1 }}">
-                <button class="btn btn-outline-danger" type="button" (click)="removeOption(i)" *ngIf="newQuestion.options!.length > 2">
-                  <i class="feather icon-x"></i>
-                </button>
+
+            <!-- File Upload Section -->
+            <div class="col-md-12 mb-4">
+              <label class="form-label fw-bold">Media Upload (Optional)</label>
+              <div class="upload-area" (click)="fileInput.click()">
+                <input #fileInput type="file" class="d-none" (change)="onFileSelected($event)"
+                       accept="image/*,video/*,audio/*">
+                <div *ngIf="!filePreviewUrl" class="upload-placeholder">
+                  <i class="feather icon-upload-cloud"></i>
+                  <p class="mb-0">Click to upload image, video, or audio</p>
+                  <small class="text-muted">Supports: JPG, PNG, MP4, MP3, WAV</small>
+                </div>
+                <div *ngIf="filePreviewUrl" class="preview-container">
+                  <img *ngIf="newQuestion.fileType === 'image'" [src]="filePreviewUrl" alt="Preview" class="preview-media">
+                  <video *ngIf="newQuestion.fileType === 'video'" [src]="filePreviewUrl" controls class="preview-media"></video>
+                  <audio *ngIf="newQuestion.fileType === 'audio'" [src]="filePreviewUrl" controls class="preview-audio"></audio>
+                  <button type="button" class="btn btn-sm btn-danger remove-file-btn" (click)="removeFile(); $event.stopPropagation()">
+                    <i class="feather icon-x"></i>
+                  </button>
+                </div>
               </div>
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="addOption()">
-                <i class="feather icon-plus me-1"></i>Add Option
-              </button>
             </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" [(ngModel)]="newQuestion.correctAnswer" name="correctAnswer" required>
-            </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Explanation</label>
-              <textarea class="form-control" [(ngModel)]="newQuestion.explanation" name="explanation" rows="2"></textarea>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Order</label>
-              <input type="number" class="form-control" [(ngModel)]="newQuestion.order" name="order" min="1">
-            </div>
-            <div class="col-md-6 mb-3">
-              <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="newQuestion.isActive" name="isActive" id="isActive">
-                <label class="form-check-label" for="isActive">
-                  Active
-                </label>
+
+            <!-- Choices Section -->
+            <div class="col-md-12 mb-3" *ngIf="newQuestion.type === 'multiple_choice'">
+              <label class="form-label fw-bold">Answer Choices <span class="text-danger">*</span></label>
+              <div class="choices-container">
+                <div *ngFor="let choice of newQuestion.choices; let i = index" class="choice-item-input mb-2">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <input class="form-check-input mt-0" type="radio" [name]="'correctAnswer'"
+                             [checked]="choice.isAnswer" (change)="setCorrectAnswer(i)">
+                    </div>
+                    <input type="text" class="form-control" [(ngModel)]="choice.choose"
+                           [name]="'choice' + i" placeholder="Choice {{ i + 1 }}">
+                    <button class="btn btn-outline-danger" type="button" (click)="removeChoice(i)"
+                            *ngIf="newQuestion.choices.length > 2">
+                      <i class="feather icon-trash-2"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" (click)="addChoice()">
+                  <i class="feather icon-plus me-1"></i>Add Choice
+                </button>
               </div>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="addQuestion()">Add Question</button>
+        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+          <i class="feather icon-x me-1"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="addQuestion()">
+          <i class="feather icon-check me-1"></i>Create Question
+        </button>
       </div>
     </div>
   </div>
@@ -188,85 +296,97 @@
 <div class="modal-backdrop fade" [class.show]="showAddModal" *ngIf="showAddModal"></div>
 
 <!-- Edit Question Modal -->
-<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+<div class="modal fade modern-modal" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Question</h5>
-        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      <div class="modal-header gradient-header">
+        <h5 class="modal-title text-white"><i class="feather icon-edit me-2"></i>Edit Question</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
       </div>
       <div class="modal-body">
         <form>
           <div class="row">
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Episode <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="editQuestion.episodeId" name="episodeId" required>
-                <option value="">Select Episode</option>
-                <option *ngFor="let episode of episodes" [value]="episode._id">{{ episode.title }}</option>
+            <!-- Question Text -->
+            <div class="col-md-12 mb-4">
+              <label class="form-label fw-bold">Question Text <span class="text-danger">*</span></label>
+              <textarea class="form-control modern-input" [(ngModel)]="editQuestion.question" name="question" rows="3"
+                        placeholder="Enter your question here..." required></textarea>
+            </div>
+
+            <!-- Current Media Preview -->
+            <div class="col-md-12 mb-3" *ngIf="editFilePreviewUrl">
+              <label class="form-label fw-bold">Current Media</label>
+              <div class="preview-container">
+                <img *ngIf="editFilePreviewUrl && (editFilePreviewUrl.includes('.jpg') || editFilePreviewUrl.includes('.png') || editFilePreviewUrl.includes('.jpeg'))"
+                     [src]="editFilePreviewUrl" alt="Current media" class="preview-media">
+                <video *ngIf="editFilePreviewUrl && (editFilePreviewUrl.includes('.mp4') || editFilePreviewUrl.includes('.webm'))"
+                       [src]="editFilePreviewUrl" controls class="preview-media"></video>
+                <audio *ngIf="editFilePreviewUrl && (editFilePreviewUrl.includes('.mp3') || editFilePreviewUrl.includes('.wav'))"
+                       [src]="editFilePreviewUrl" controls class="preview-audio"></audio>
+              </div>
+            </div>
+
+            <!-- Category and Reward Type -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="editQuestion.categoryId" name="categoryId" required>
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
               </select>
             </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Question Text <span class="text-danger">*</span></label>
-              <textarea class="form-control" [(ngModel)]="editQuestion.questionText" name="questionText" rows="3" required></textarea>
-            </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Question Type <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="editQuestion.questionType" name="questionType" required>
+              <label class="form-label fw-bold">Reward Type <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="editQuestion.rewardType" name="rewardType" required>
+                <option value="">Select Reward Type</option>
+                <option *ngFor="let reward of rewardTypes" [value]="reward.id">{{ reward.name }}</option>
+              </select>
+            </div>
+
+            <!-- Question Type and Points -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Question Type <span class="text-danger">*</span></label>
+              <select class="form-select modern-input" [(ngModel)]="editQuestion.type" name="type" required>
                 <option *ngFor="let type of questionTypes" [value]="type.value">{{ type.label }}</option>
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label">Difficulty <span class="text-danger">*</span></label>
-              <select class="form-select" [(ngModel)]="editQuestion.difficulty" name="difficulty" required>
-                <option *ngFor="let diff of difficulties" [value]="diff">{{ diff }}</option>
-              </select>
+              <label class="form-label fw-bold">Points</label>
+              <input type="number" class="form-control modern-input" [(ngModel)]="editQuestion.point" name="point" min="1" placeholder="10">
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Points</label>
-              <input type="number" class="form-control" [(ngModel)]="editQuestion.points" name="points" min="1">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Time Limit (seconds)</label>
-              <input type="number" class="form-control" [(ngModel)]="editQuestion.timeLimit" name="timeLimit" min="1">
-            </div>
-            <div class="col-md-12 mb-3" *ngIf="editQuestion.questionType === 'multiple-choice'">
-              <label class="form-label">Options</label>
-              <div *ngFor="let option of editQuestion.options; let i = index" class="input-group mb-2">
-                <input type="text" class="form-control" [(ngModel)]="editQuestion.options![i]" [name]="'editOption' + i" placeholder="Option {{ i + 1 }}">
-                <button class="btn btn-outline-danger" type="button" (click)="removeEditOption(i)" *ngIf="editQuestion.options!.length > 2">
-                  <i class="feather icon-x"></i>
+
+            <!-- Choices Section -->
+            <div class="col-md-12 mb-3" *ngIf="editQuestion.type === 'multiple_choice'">
+              <label class="form-label fw-bold">Answer Choices <span class="text-danger">*</span></label>
+              <div class="choices-container">
+                <div *ngFor="let choice of editQuestion.choices; let i = index" class="choice-item-input mb-2">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <input class="form-check-input mt-0" type="radio" [name]="'editCorrectAnswer'"
+                             [checked]="choice.isAnswer" (change)="setEditCorrectAnswer(i)">
+                    </div>
+                    <input type="text" class="form-control" [(ngModel)]="choice.choose"
+                           [name]="'editChoice' + i" placeholder="Choice {{ i + 1 }}">
+                    <button class="btn btn-outline-danger" type="button" (click)="removeEditChoice(i)"
+                            *ngIf="editQuestion.choices.length > 2">
+                      <i class="feather icon-trash-2"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" (click)="addEditChoice()">
+                  <i class="feather icon-plus me-1"></i>Add Choice
                 </button>
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="addEditOption()">
-                <i class="feather icon-plus me-1"></i>Add Option
-              </button>
-            </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" [(ngModel)]="editQuestion.correctAnswer" name="correctAnswer" required>
-            </div>
-            <div class="col-md-12 mb-3">
-              <label class="form-label">Explanation</label>
-              <textarea class="form-control" [(ngModel)]="editQuestion.explanation" name="explanation" rows="2"></textarea>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Order</label>
-              <input type="number" class="form-control" [(ngModel)]="editQuestion.order" name="order" min="1">
-            </div>
-            <div class="col-md-6 mb-3">
-              <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="editQuestion.isActive" name="isActiveEdit" id="isActiveEdit">
-                <label class="form-check-label" for="isActiveEdit">
-                  Active
-                </label>
               </div>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="updateQuestion()">Update Question</button>
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+          <i class="feather icon-x me-1"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="updateQuestion()">
+          <i class="feather icon-check me-1"></i>Update Question
+        </button>
       </div>
     </div>
   </div>
@@ -274,24 +394,31 @@
 <div class="modal-backdrop fade" [class.show]="showEditModal" *ngIf="showEditModal"></div>
 
 <!-- Delete Question Modal -->
-<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
+<div class="modal fade modern-modal" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Delete Question</h5>
-        <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="feather icon-trash-2 me-2"></i>Delete Question</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this question?</p>
-        <p class="text-muted"><strong>{{ deleteQuestionText }}</strong></p>
+        <div class="text-center mb-3">
+          <i class="feather icon-alert-triangle text-warning" style="font-size: 48px;"></i>
+        </div>
+        <p class="text-center mb-2">Are you sure you want to delete this question?</p>
+        <p class="text-center text-muted"><strong>{{ deleteQuestionText }}</strong></p>
         <div class="alert alert-warning">
           <i class="feather icon-alert-triangle me-2"></i>
           This action cannot be undone.
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          <i class="feather icon-x me-1"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+          <i class="feather icon-trash-2 me-1"></i>Delete
+        </button>
       </div>
     </div>
   </div>
