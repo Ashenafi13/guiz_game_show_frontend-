@@ -11,18 +11,30 @@
   }
 
   .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #764ba2 100%);
     color: white;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 
     h5 {
       font-weight: 600;
       margin: 0;
+      white-space: nowrap;
     }
 
     small {
       opacity: 0.9;
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    .card-header-right {
+      flex-shrink: 0;
     }
   }
 }
@@ -44,6 +56,41 @@
     transform: translateY(0);
   }
 }
+
+// Teams Summary Bar
+.teams-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .summary-item {
+    flex: 1 1 160px;
+    min-width: 140px;
+    background: linear-gradient(135deg, #f6f9fc 0%, #eef2ff 100%);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .summary-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #718096;
+      font-weight: 600;
+    }
+
+    .summary-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #2d3748;
+    }
+  }
+}
+
 
 // Modern Table Styling
 .modern-table {

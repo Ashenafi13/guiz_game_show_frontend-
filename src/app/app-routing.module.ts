@@ -58,6 +58,10 @@ const routes: Routes = [
         loadComponent: () => import('./demo/pages/episodes/episodes.component').then((c) => c.EpisodesComponent)
       },
       {
+        path: 'competitions',
+        loadComponent: () => import('./demo/pages/competitions/competitions.component').then((c) => c.CompetitionsComponent)
+      },
+      {
         path: 'questions',
         loadComponent: () => import('./demo/pages/questions/questions.component').then((c) => c.QuestionsComponent)
       },

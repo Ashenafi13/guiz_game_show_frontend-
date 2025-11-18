@@ -93,7 +93,15 @@ export const NavigationItems: NavigationItem[] = [
         classes: 'nav-item',
         icon: 'feather icon-shield'
       },
-
+//competitions
+      {
+        id: 'competitions',
+        title: 'Competitions',
+        type: 'item',
+        url: '/competitions',
+        classes: 'nav-item',
+        icon: 'feather icon-award'
+      }
     ]
   },
   {

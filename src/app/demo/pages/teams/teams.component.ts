@@ -113,7 +113,7 @@ export class TeamsComponent implements OnInit {
   }
 
   openDeleteModal(team: Team): void {
-    this.deleteTeamId = team._id || '';
+    this.deleteTeamId = team.id || '';
     this.deleteTeamName = team.name;
     this.showDeleteModal = true;
   }
@@ -165,6 +165,7 @@ export class TeamsComponent implements OnInit {
   }
 
   confirmDelete(): void {
+    console.log('Deleting team:', this.deleteTeamId);
     if (!this.deleteTeamId) return;
     this.loading = true;
     this.error = '';

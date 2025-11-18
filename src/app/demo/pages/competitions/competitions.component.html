@@ -1,0 +1,214 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0">
+          <i class="feather icon-award me-2"></i>Competitions per Episode
+        </h5>
+        <div class="d-flex flex-wrap gap-2">
+          <select class="form-select filter-select" [(ngModel)]="selectedSeasonId" (change)="onSeasonChange()">
+            <option value="">All seasons</option>
+            <option *ngFor="let season of seasons" [value]="season.id">{{ season.name }}</option>
+          </select>
+          <select class="form-select filter-select" [(ngModel)]="selectedEpisodeId" (change)="onEpisodeChange()">
+            <option value="">All episodes</option>
+            <option *ngFor="let episode of getEpisodesForSeason()" [value]="episode.id">
+              {{ episode.name }}
+            </option>
+          </select>
+          <button class="btn btn-primary" (click)="openAddModal()">
+            <i class="feather icon-plus me-1"></i>Create Competition
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="feather icon-alert-circle me-2"></i>{{ error }}
+          <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
+        </div>
+        <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+          <i class="feather icon-check-circle me-2"></i>{{ successMessage }}
+          <button type="button" class="btn-close" (click)="successMessage = ''" aria-label="Close"></button>
+        </div>
+
+        <div *ngIf="loading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!loading" class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Season</th>
+                <th>Episode</th>
+                <th>Teams</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let comp of competitions">
+                <td><strong>{{ getSeasonName(comp.seasonId) }}</strong></td>
+                <td>{{ getEpisodeName(comp.episodeId) }}</td>
+                <td>
+                  <ng-container *ngIf="comp.teams?.length; else noTeams">
+                    <span *ngFor="let team of comp.teams" class="badge bg-light text-dark border team-badge">
+                      {{ getTeamName(team) }}
+                    </span>
+                  </ng-container>
+                  <ng-template #noTeams>
+                    <span class="text-muted">No teams assigned</span>
+                  </ng-template>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-warning me-1" (click)="openEditModal(comp)" title="Edit">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="openDeleteModal(comp)" title="Delete">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="competitions.length === 0">
+                <td colspan="4" class="text-center py-4">
+                  <i class="feather icon-inbox" style="font-size: 48px; color: #ccc;"></i>
+                  <p class="mt-2 text-muted mb-0">No competitions found. Use "Create Competition" to add one.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Competition Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Competition</h5>
+        <button type="button" class="btn-close" (click)="closeAddModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Season <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="newCompetition.seasonId" name="newSeasonId">
+                <option value="">Select season</option>
+                <option *ngFor="let season of seasons" [value]="season.id">{{ season.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Episode <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="newCompetition.episodeId" name="newEpisodeId">
+                <option value="">Select episode</option>
+                <option *ngFor="let episode of getEpisodesForSeason(newCompetition.seasonId)" [value]="episode.id">
+                  {{ episode.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Teams <span class="text-danger">*</span></label>
+              <select class="form-select" multiple size="5" [(ngModel)]="newCompetition.teams" name="newTeams">
+                <option *ngFor="let team of teams" [ngValue]="team.id || team._id">
+                  {{ team.name }}
+                </option>
+              </select>
+              <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple teams.</small>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="addCompetition()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showAddModal" *ngIf="showAddModal"></div>
+
+<!-- Edit Competition Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" *ngIf="editCompetition">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Competition</h5>
+        <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Season <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="editCompetition.seasonId" name="editSeasonId">
+                <option value="">Select season</option>
+                <option *ngFor="let season of seasons" [value]="season.id">{{ season.name }}</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Episode <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="editCompetition.episodeId" name="editEpisodeId">
+                <option value="">Select episode</option>
+                <option *ngFor="let episode of getEpisodesForSeason(editCompetition.seasonId)" [value]="episode.id">
+                  {{ episode.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Teams <span class="text-danger">*</span></label>
+              <select class="form-select" multiple size="5" [(ngModel)]="editCompetition.teams" name="editTeams">
+                <option *ngFor="let team of teams" [ngValue]="team.id || team._id">
+                  {{ team.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateCompetition()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showEditModal" *ngIf="showEditModal"></div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" *ngIf="selectedCompetition">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Delete Competition</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this competition?</p>
+        <p class="mb-0 text-muted">
+          Season: <strong>{{ getSeasonName(selectedCompetition.seasonId) }}</strong><br />
+          Episode: <strong>{{ getEpisodeName(selectedCompetition.episodeId) }}</strong>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteCompetition()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showDeleteModal" *ngIf="showDeleteModal"></div>
+

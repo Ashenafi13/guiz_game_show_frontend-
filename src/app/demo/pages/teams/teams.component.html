@@ -30,63 +30,80 @@
             </div>
           </div>
 
-          <div *ngIf="!loading" class="table-responsive">
-            <table class="table table-hover modern-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Team Name</th>
-                  <th>Season</th>
-                  <th>Members</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let team of teams; let i = index" class="team-row">
-                  <td class="fw-bold">{{ i + 1 }}</td>
-                  <td>
-                    <div class="team-name-cell">
-                      <span class="team-badge" [style.background-color]="team.color">
-                        {{ team.name }}
-                      </span>
-                      <small class="d-block text-muted mt-1" *ngIf="team.description">{{ team.description }}</small>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="badge bg-info">{{ getSeasonName(team.seasonId) }}</span>
-                  </td>
-                  <td>
-                    <div class="members-cell">
-                      <span class="badge bg-secondary me-1">
-                        <i class="feather icon-users"></i> {{ team.members?.length || 0 }}
-                      </span>
-                      <button class="btn btn-sm btn-outline-info" (click)="openManageMembersModal(team)" title="Manage Members">
-                        <i class="feather icon-user-plus"></i>
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(team)" title="Edit Team">
-                        <i class="feather icon-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(team)" title="Delete Team">
-                        <i class="feather icon-trash-2"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr *ngIf="teams.length === 0">
-                  <td colspan="5" class="text-center py-5">
-                    <div class="empty-state">
-                      <i class="feather icon-inbox"></i>
-                      <p class="mt-3 mb-0">No teams found</p>
-                      <small class="text-muted">Create your first team to get started</small>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div *ngIf="!loading">
+            <div class="teams-summary mb-4">
+              <div class="summary-item">
+                <div class="summary-label">Total Teams</div>
+                <div class="summary-value">{{ teams?.length || 0 }}</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Seasons</div>
+                <div class="summary-value">{{ seasons?.length || 0 }}</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Competitors</div>
+                <div class="summary-value">{{ competitors?.length || 0 }}</div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover modern-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Team Name</th>
+                    <th>Season</th>
+                    <th>Members</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let team of teams; let i = index" class="team-row">
+                    <td class="fw-bold">{{ i + 1 }}</td>
+                    <td>
+                      <div class="team-name-cell">
+                        <span class="team-badge" [style.background-color]="team.color">
+                          {{ team.name }}
+                        </span>
+                        <small class="d-block text-muted mt-1" *ngIf="team.description">{{ team.description }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge bg-info">{{ getSeasonName(team.seasonId) }}</span>
+                    </td>
+                    <td>
+                      <div class="members-cell">
+                        <span class="badge bg-secondary me-1">
+                          <i class="feather icon-users"></i> {{ team.members?.length || 0 }}
+                        </span>
+                        <button class="btn btn-sm btn-outline-info" (click)="openManageMembersModal(team)" title="Manage Members">
+                          <i class="feather icon-user-plus"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(team)" title="Edit Team">
+                          <i class="feather icon-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(team)" title="Delete Team">
+                          <i class="feather icon-trash-2"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="teams.length === 0">
+                    <td colspan="5" class="text-center py-5">
+                      <div class="empty-state">
+                        <i class="feather icon-inbox"></i>
+                        <p class="mt-3 mb-0">No teams found</p>
+                        <small class="text-muted">Create your first team to get started</small>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
