@@ -1,9 +1,11 @@
 <div class="">
   <a [routerLink]="['/dashboard/default/']" class="b-brand">
-    <div class="b-bg">
+    <!-- <div class="b-bg">
       <i class="feather icon-trending-up"></i>
+    </div> -->
+     <div style="background-color: #fff; width: 60px; height: 60px;" class="rounded-circle shadow-rounded d-flex align-items-center justify-content-center mt-2">
+      <img width="50" height="50" src="../../../../../../assets/images/etv.png"/>
     </div>
-    <span class="b-title">Datta Able</span>
   </a>
   <a href="javascript:" class="mobile-menu" [ngClass]="{ on: navCollapsed }" id="mobile-collapse" (click)="navCollapse()"><span></span></a>
 </div>

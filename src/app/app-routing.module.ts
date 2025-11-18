@@ -30,26 +30,6 @@ const routes: Routes = [
         loadComponent: () => import('./demo/dashboard/dashboard.component').then((c) => c.DashboardComponent)
       },
       {
-        path: 'basic',
-        loadChildren: () => import('./demo/ui-elements/ui-basic/ui-basic.module').then((m) => m.UiBasicModule)
-      },
-      {
-        path: 'forms',
-        loadComponent: () => import('./demo/pages/form-element/form-element').then((c) => c.FormElement)
-      },
-      {
-        path: 'tables',
-        loadComponent: () => import('./demo/pages/tables/tbl-bootstrap/tbl-bootstrap.component').then((c) => c.TblBootstrapComponent)
-      },
-      {
-        path: 'apexchart',
-        loadComponent: () => import('./demo/pages/core-chart/apex-chart/apex-chart.component').then((c) => c.ApexChartComponent)
-      },
-      {
-        path: 'sample-page',
-        loadComponent: () => import('./demo/extra/sample-page/sample-page.component').then((c) => c.SamplePageComponent)
-      },
-      {
         path: 'seasons',
         loadComponent: () => import('./demo/pages/seasons/seasons.component').then((c) => c.SeasonsComponent)
       },
