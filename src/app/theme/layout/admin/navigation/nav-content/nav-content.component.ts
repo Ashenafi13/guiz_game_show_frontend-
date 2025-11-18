@@ -19,7 +19,7 @@ export class NavContentComponent {
 
   // public method
   // version
-  title = 'Demo application for version numbering';
+  title = '';
   currentApplicationVersion = environment.appVersion;
 
   navigations!: NavigationItem[];
