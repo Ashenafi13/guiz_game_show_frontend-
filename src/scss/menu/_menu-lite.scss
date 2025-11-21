@@ -814,7 +814,7 @@
     }
     .nav-link:hover,
     .nav-link:focus {
-      color: $primary-color;
+      color: $menu-light-background;
     }
   }
   // for navbar
@@ -1079,7 +1079,7 @@
         &:hover {
           > a {
             &:before {
-              background: #1dc4e9;
+              background: #e91de9;
             }
           }
         }
@@ -1091,7 +1091,7 @@
       &.pcoded-trigger {
         &:after {
           content: '';
-          background-color: #1dc4e9;
+          background-color: $menu-active-color;
           z-index: 1027;
           position: absolute;
           left: 0;

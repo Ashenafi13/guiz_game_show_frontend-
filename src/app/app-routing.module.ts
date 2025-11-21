@@ -60,6 +60,10 @@ const routes: Routes = [
       {
         path: 'reward-types',
         loadComponent: () => import('./demo/pages/reward-type/reward-type.component').then((c) => c.RewardTypeComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./demo/pages/profile/profile.component').then((c) => c.ProfileComponent)
       }
     ]
   },

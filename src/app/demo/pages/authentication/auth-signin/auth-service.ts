@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { StorageService } from 'src/app/theme/shared/storage-service';
 import { environment } from 'src/environments/environment';
 
@@ -8,7 +9,12 @@ import { environment } from 'src/environments/environment';
 })
 export class AuthService {
 
-  constructor(private http: HttpClient, private storage:StorageService) { }
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService,
+    private router: Router
+  ) { }
+
   httpOptions = {
     header: new HttpHeaders({
       'Content-Type': 'application/json',
@@ -20,7 +26,7 @@ export class AuthService {
     }),
   };
 
-    SignIn(userData:any){
+  SignIn(userData: any) {
     return this.http.post<any>(
       environment.URL + `/login`,
       userData,
@@ -30,8 +36,15 @@ export class AuthService {
     );
   }
 
-   isLoggedIn(): boolean {
+  isLoggedIn(): boolean {
     const authToken = this.storage.getToken();
     return authToken !== null && authToken !== undefined;
+  }
+
+  logout(): void {
+    // Clear all stored data
+    this.storage.clearAll();
+    // Navigate to login page
+    this.router.navigate(['/']);
   }
 }

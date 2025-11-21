@@ -78,7 +78,7 @@ strong {
     }
 
     &:last-child a {
-      color: #111;
+      color: $theme-heading-color;
       font-weight: 600;
     }
   }
@@ -131,7 +131,7 @@ p.text-muted {
 
     h5 {
       margin-bottom: 0;
-      color: #000;
+      color: $theme-heading-color;
       font-size: 17px;
       font-weight: 400;
       display: inline-block;

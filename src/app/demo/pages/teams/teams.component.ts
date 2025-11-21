@@ -148,10 +148,10 @@ export class TeamsComponent implements OnInit {
   }
 
   updateTeam(): void {
-    if (!this.editTeam._id) return;
+    if (!this.editTeam.id) return;
     this.loading = true;
     this.error = '';
-    this.teamsService.updateTeam(this.editTeam._id, this.editTeam).subscribe({
+    this.teamsService.updateTeam(this.editTeam.id, this.editTeam).subscribe({
       next: (response) => {
         this.loading = false;
         this.closeEditModal();
